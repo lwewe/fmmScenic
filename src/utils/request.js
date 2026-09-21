@@ -1,0 +1,95 @@
+import axios from "axios";
+import router from "@/router";
+import toast from "vant/lib/toast";
+
+
+const instance = axios.create({
+    baseURL: "/movie/route",
+    // baseURL: "/test/route",
+    // timeout: 10000,
+    headers: {
+        " Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
+    }
+});
+
+// const defaultOpt = { login: true };
+function baseRequest(options) {
+    // const token = $store.state.app.token;
+    const headers = options.headers || {};
+    // headers["Authori-zation"] = "Bearer " + token;
+    options.headers = headers;
+    // if (options.login && !token) {
+    //     toLogin();
+    //     return Promise.reject({ msg: "未登录", toLogin: true });
+    // }
+    // console.log(options);
+    return instance(options).then(res => {
+        const data = res.data || {};
+        // console.log(res,res.data,"res.data.code")
+        if (res.status !== 200)
+            return Promise.resolve({msg: "请求失败", res, data, code: res.data.code});
+
+            // if ([410000, 410001, 410002].indexOf(data.status) !== -1) {
+            //     // toLogin();
+            //     return Promise.reject({ msg: res.data.msg, res, data, toLogin: true });
+        // }
+        else if (res.status === 200 && res.data.success == true) {
+            return Promise.resolve({msg: res.data.msg || "操作成功", data: data.data, code: 200});
+        } else if (res.data.error.code == "9999") {
+            router.go(0)
+            location.reload();
+        } else {
+            var code = res.data.code
+            if (res.data.error) {
+                code = res.data.error.code
+            }
+            toast(res.data.msg||"暂无数据")
+            setTimeout(() => {
+                router.go(-1)
+            },1000)
+            return Promise.resolve({msg: res.data.msg || res.data.error.desp, res, data, code});
+        }
+    });
+}
+
+/**
+ * http 请求基础类
+ * 参考文档 https://www.kancloud.cn/yunye/axios/234845
+ *
+ */
+const request = ["post", "put", "patch"].reduce((request, method) => {
+    /**
+     *
+     * @param url string 接口地址
+     * @param data object get参数
+     * @param options object axios 配置项
+     * @returns {AxiosPromise}
+     */
+    request[method] = (url, data = {}, options = {}) => {
+        return baseRequest(
+            Object.assign({url, data, method},
+                // defaultOpt,
+                options)
+        );
+    };
+    return request;
+}, {});
+
+["get", "delete", "head"].forEach(method => {
+    /**
+     *
+     * @param url string 接口地址
+     * @param params object get参数
+     * @param options object axios 配置项
+     * @returns {AxiosPromise}
+     */
+    request[method] = (url, params = {}, options = {}) => {
+        return baseRequest(
+            Object.assign({url, params, method},
+                // defaultOpt,
+                options)
+        );
+    };
+});
+
+export default request;
