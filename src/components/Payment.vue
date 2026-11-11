@@ -22,6 +22,8 @@
             <p>
               <span v-if="item.pid==1">超级卡</span>
               <span v-if="item.pid==2">蛋糕卡</span>
+              <span v-if="item.pid==15">超级A卡</span>
+              <span v-if="item.pid==16">蛋糕A卡</span>
               <span v-if="item.pid==3">电影卡</span>
               <span v-if="item.pid==4">图书卡</span>
               <span v-if="item.pid==5">超级券</span>
